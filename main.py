@@ -13,15 +13,19 @@ def load_sheets(filename):
     return sheets
 
 
+def load_sheet_data(sheet):
+    for i in range(sheet.nrows):
+        for j in range(sheet.ncols):
+            congratulation = sheet.cell(rowx=i, colx=j).value
+            if congratulation != '':
+                yield congratulation
+
+
 def load_congratulations(congratulations_sheets):
     congratulation_groups = {}
     for sheet in congratulations_sheets:
-        congratulation_groups[sheet.name] = []
-        for i in range(sheet.nrows):
-            for j in range(sheet.ncols):
-                congratulation = sheet.cell(rowx=i, colx=j).value
-                if congratulation != '':
-                    congratulation_groups[sheet.name].append(congratulation)
+        congratulation_groups[sheet.name] = list(load_sheet_data(sheet))
+
     return congratulation_groups
 
 
