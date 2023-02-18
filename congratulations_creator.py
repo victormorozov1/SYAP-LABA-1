@@ -1,5 +1,5 @@
 from heapq import heappush, heappop
-from random import choice
+from random import choice, choices
 from dataclasses import dataclass
 
 
@@ -11,47 +11,48 @@ class Congratulation:
 
 
 class CongratulationsCreator:
-    def __init__(self, congratulations):
-        self.congratulations = [Congratulation(i, congratulations[i], 0) for i in range(len(congratulations))]
+    def __init__(self, congratulation_groups):
+        self.congratulations_groups = {}
+        id = 1
+        for group_name, congratulations in congratulation_groups.items():
+            self.congratulations_groups[group_name] = []
+            for c in congratulations:
+                self.congratulations_groups[group_name].append(Congratulation(id, c, 0))
+                id += 1
         self.history = []
 
-    def get_min_congratulations(self):
-        min_num = min([i.frequency for i in self.congratulations])
-        return filter(lambda cong: cong.frequency == min_num, self.congratulations)
+    @staticmethod
+    def get_min_congratulations(cong_group):
+        min_num = min([i.frequency for i in cong_group])
+        return filter(lambda cong: cong.frequency == min_num, cong_group)
 
-    def not_used_triads(self):
-        for c1 in self.congratulations:
-            for c2 in self.congratulations:
-                for c3 in self.congratulations:
-                    if self.triad_hash(c1, c2, c3) not in self.history:
-                        if len({c1.id, c2.id, c3.id}) == 3:
-                            yield c1, c2, c3
+    def get_triad(self, deep=0):
+        if deep > 10 ** 5:
+            raise Exception("unable to generate a new triad")
+        # print('self.congratulations_groups.values()', list(self.congratulations_groups.values()))
+        group_names = choices(list(self.congratulations_groups.keys()), k=3)
 
-    def get_triad(self):
-        not_used_triads_list = list(self.not_used_triads())
+        if len(set(group_names)) < 3:
+            return self.get_triad(deep=deep+1)
 
-        if len(not_used_triads_list) == 0:
-            raise Exception("all triads have been used")
+        # print(group_names)
+        triad = [choice(list(self.get_min_congratulations(self.congratulations_groups[group_name]))) for group_name in group_names]
+        if self.triad_hash(*triad) in self.history:
+            return self.not_used_triads(deep=deep+1)
 
-        min_frequency = min([CongratulationsCreator.triad_frequency(*t) for t in not_used_triads_list])
-        not_used_min_triads = list(filter(lambda t: CongratulationsCreator.triad_frequency(*t) == min_frequency, not_used_triads_list))
-
-        triad = choice(not_used_min_triads)
-        self.history.append(self.triad_hash(*triad))
-
-        for i in range(3):
-            triad[i].frequency += 1
+        for congratulation in triad:
+            congratulation.frequency += 1
 
         return triad
 
-    def triad_hash(self, c1 : Congratulation, c2 : Congratulation, c3 : Congratulation):
-        a = sorted([c1, c2, c3], key=lambda c: c.frequency)
-        sz = len(self.congratulations)
-        return ((a[0].id * sz + a[1].id) * sz) + a[2].id
-
     @staticmethod
-    def triad_frequency(c1: Congratulation, c2: Congratulation, c3: Congratulation):
-        return c1.frequency + c2.frequency + c3.frequency
+    def triad_hash(c1 : Congratulation, c2 : Congratulation, c3 : Congratulation, M=1000):
+        a = sorted([c1, c2, c3], key=lambda c: c.frequency)
+        return ((a[0].id * M + a[1].id) * M) + a[2].id
+
+    # @staticmethod
+    # def triad_frequency(c1: Congratulation, c2: Congratulation, c3: Congratulation):
+    #     return c1.frequency + c2.frequency + c3.frequency
 
 
 if __name__ == '__main__':
