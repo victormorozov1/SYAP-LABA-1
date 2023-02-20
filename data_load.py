@@ -7,6 +7,11 @@ class Settings:
     font_style: str = 'Calibri'
     template_src: str = 'template.doc'
     output_folder: str = 'output'
+    people_page: str = 'people'
+    text_box_x: int = 10
+    text_box_y: int = 10
+    text_box_height: int = 100
+    text_box_width: int = 100
 
     def __setitem__(self, key, value):
         match key:
@@ -16,6 +21,16 @@ class Settings:
                 self.template_src = value
             case 'output_folder':
                 self.output_folder = value
+            case 'people_page':
+                self.people_page = value
+            case 'text_box_x':
+                self.text_box_x = value
+            case 'text_box_y':
+                self.text_box_y = value
+            case 'text_box_width':
+                self.text_box_width = value
+            case 'text_box_height':
+                self.text_box_height = value
             case _:
                 raise Exception(f'Field {key} not found')
 
