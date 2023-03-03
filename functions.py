@@ -1,3 +1,5 @@
+import os
+
 from docx import Document
 from docxcompose.composer import Composer
 
@@ -16,3 +18,10 @@ def concatenate_words(files, composed_filename):
         composer.append(doc)
 
     composer.save(composed_filename)
+
+
+def delete_files(files):
+    for filename in files:
+        if os.path.exists(filename):
+            print('0')
+            os.remove(filename)

@@ -5,7 +5,7 @@ import win32com.client as win32
 import datetime
 from docxcompose.composer import Composer
 from docx import Document as Document
-from functions import concatenate_words
+from functions import concatenate_words, delete_files
 from data_load import load_sheets, load_settings, load_congratulations, load_sheet_data
 from congratulations_creator import CongratulationsCreator
 
@@ -68,7 +68,10 @@ def write_to_word(output_folder, people, triads):
         i += 1
     word.Application.Quit()
 
-    concatenate_words([f'{time_words_folder}\\{i}.docx' for i in range(len(people))], f'{time_words_folder}\\res-{str(datetime.datetime.now()).replace(".", ",").replace(":", ",")}.docx')
+    temporary_files = [f'{time_words_folder}\\{i}.docx' for i in range(len(people))]
+    concatenate_words(temporary_files, f'{time_words_folder}\\res-{str(datetime.datetime.now()).replace(".", ",").replace(":", ",")}.docx')
+    delete_files(temporary_files)
+
 
 
 if __name__ == '__main__':
