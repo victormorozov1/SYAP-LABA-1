@@ -24,7 +24,6 @@ def concatenate_words(files, composed_filename):
 def delete_files(files):
     for filename in files:
         if os.path.exists(filename):
-            print('0')
             os.remove(filename)
 
 
