@@ -5,6 +5,8 @@ import win32com.client as win32
 import datetime
 from docxcompose.composer import Composer
 from docx import Document as Document
+
+import functions
 from functions import concatenate_words, delete_files
 from data_load import load_sheets, load_settings, load_congratulations, load_sheet_data
 from congratulations_creator import CongratulationsCreator
@@ -39,7 +41,7 @@ def gen_triads(n, congratulations):
         yield c.get_triad()
 
 
-def write_to_word(output_folder, people, triads):
+def write_to_word(output_folder, people, triads, res_filename):
     if not os.path.exists(output_folder):
         os.mkdir(output_folder)
 
@@ -69,7 +71,8 @@ def write_to_word(output_folder, people, triads):
     word.Application.Quit()
 
     temporary_files = [f'{time_words_folder}\\{i}.docx' for i in range(len(people))]
-    concatenate_words(temporary_files, f'{time_words_folder}\\res-{str(datetime.datetime.now()).replace(".", ",").replace(":", ",")}.docx')
+    ind = functions.get_file_ind(time_words_folder, res_filename)
+    concatenate_words(temporary_files, f'{time_words_folder}\\{res_filename}{ind}.docx')
     delete_files(temporary_files)
 
 
@@ -79,4 +82,4 @@ if __name__ == '__main__':
 
     triads = list(gen_triads(len(people), congratulations))
 
-    write_to_word(settings.output_folder, people, triads)
+    write_to_word(settings.output_folder, people, triads, 'res')
