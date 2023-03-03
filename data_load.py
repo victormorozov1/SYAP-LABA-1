@@ -8,6 +8,8 @@ class Settings:
     template_src: str = 'template.doc'
     output_folder: str = 'output'
     people_page: str = 'people'
+    res_filename: str = 'res'
+
     text_box_x: int = 10
     text_box_y: int = 10
     text_box_height: int = 100
@@ -31,6 +33,8 @@ class Settings:
                 self.text_box_width = value
             case 'text_box_height':
                 self.text_box_height = value
+            case 'res_filename':
+                self.res_filename = value
             case _:
                 raise Exception(f'Field {key} not found')
 

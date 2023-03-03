@@ -82,4 +82,4 @@ if __name__ == '__main__':
 
     triads = list(gen_triads(len(people), congratulations))
 
-    write_to_word(settings.output_folder, people, triads, 'res')
+    write_to_word(settings.output_folder, people, triads, settings.res_filename)
