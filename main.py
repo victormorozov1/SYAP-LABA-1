@@ -3,7 +3,9 @@ import sys
 import os
 import win32com.client as win32
 import datetime
-
+from docxcompose.composer import Composer
+from docx import Document as Document
+from functions import concatenate_words
 from data_load import load_sheets, load_settings, load_congratulations, load_sheet_data
 from congratulations_creator import CongratulationsCreator
 
@@ -12,8 +14,8 @@ SETTINGS_SHEET_NAME = 'settings'
 PEOPLE_SHEET_NAME = 'people'
 
 
-if __name__ == '__main__':
-    sheets = load_sheets(FILENAME)
+def load_data(filename):
+    sheets = load_sheets(filename)
     print(sheets)
 
     settings_page = sheets[SETTINGS_SHEET_NAME]
@@ -28,18 +30,29 @@ if __name__ == '__main__':
         sheets.values()))
     print(congratulations)
 
-    if not os.path.exists(settings.output_folder):
-        os.mkdir(settings.output_folder)
+    return settings, people, congratulations
+
+
+def gen_triads(n, congratulations):
+    c = CongratulationsCreator(congratulations)
+    for i in range(n):
+        yield c.get_triad()
+
+
+def write_to_word(output_folder, people, triads):
+    if not os.path.exists(output_folder):
+        os.mkdir(output_folder)
 
     word = win32.gencache.EnsureDispatch('Word.Application')
-    c = CongratulationsCreator(congratulations)
-    for name in load_sheet_data(sheets[settings.people_page]):
-        triad = c.get_triad()
+    time_words_folder = f'{os.getcwd()}\\{output_folder}'
+    i = 0
+    for name, triad in zip(people, triads):
         congratulation = f'{name}, поздравляю тебя с новым годом, желаю тебе {triad[0].val}, {triad[1].val} и {triad[2].val}'
         doc = word.Documents.Open(f'{os.getcwd()}\\{settings.template_src}')
 
         try:
-            tb = doc.Shapes.AddTextbox(1, settings.text_box_x, settings.text_box_y, settings.text_box_width, settings.text_box_height)
+            tb = doc.Shapes.AddTextbox(1, settings.text_box_x, settings.text_box_y, settings.text_box_width,
+                                       settings.text_box_height)
             tb.TextFrame.TextRange.Text = congratulation
             tb.TextFrame.MarginTop = 0
             tb.TextFrame.MarginLeft = 0
@@ -47,26 +60,20 @@ if __name__ == '__main__':
             tb.Line.Visible = 0
 
 
-            doc.SaveAs2(f'{os.getcwd()}\\{settings.output_folder}\\{name}_congratulation ({str(datetime.datetime.now()).replace(".", ",").replace(":", ",")}).docx')
+            doc.SaveAs2(f'{time_words_folder}\\{i}.docx')
             doc.Close()
         except BaseException as e:
             doc.Close()
             raise Exception(e)
+        i += 1
     word.Application.Quit()
 
+    concatenate_words([f'{time_words_folder}\\{i}.docx' for i in range(len(people))], f'{time_words_folder}\\res-{str(datetime.datetime.now()).replace(".", ",").replace(":", ",")}.docx')
 
 
-    # import docx
-    #
-    # doc = docx.Document('main.docx')
-    # doc.
-    # text = []
-    # for paragraph in doc.paragraphs:
-    #     text.append(paragraph)
-    # print('\n'.join(text))
+if __name__ == '__main__':
+    settings, people, congratulations = load_data(FILENAME)
 
+    triads = list(gen_triads(len(people), congratulations))
 
-
-
-
-
+    write_to_word(settings.output_folder, people, triads)
